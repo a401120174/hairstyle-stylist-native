@@ -18,11 +18,13 @@
 
 ## 技術架構
 
-- **框架**：React Native with Expo
+- **框架**：React Native with Expo SDK 54
 - **路由**：Expo Router
 - **圖片處理**：expo-image-picker
 - **圖標**：@expo/vector-icons (Ionicons)
 - **語言**：TypeScript
+- **React版本**：19.1.0
+- **React Native版本**：0.81.4
 
 ## 快速開始
 

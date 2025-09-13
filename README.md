@@ -1,6 +1,86 @@
-# Hairstyle Stylist Native
+# AI 髮型設計師 App
 
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+這是一個基於 React Native 和 Expo 的 AI 髮型變換應用程式，具有現代髮廊風格的用戶界面。
+
+## 功能特點
+
+### 第一階段功能
+- **照片選擇**：支援相機拍照和從相冊選擇照片
+- **髮型選擇**：水平捲動的髮型風格選擇列表
+- **現代設計**：明亮潔白的現代髮廊風格界面
+- **跨平台**：適用於 iOS 和 Android 手機
+
+### 界面設計
+- 🎨 **現代髮廊風格**：使用明亮潔白的配色方案
+- 📱 **響應式布局**：適配不同螢幕尺寸
+- 🎭 **卡片式設計**：髮型選擇採用精美的卡片設計
+- ✨ **陰影效果**：現代化的陰影和圓角設計
+
+## 技術架構
+
+- **框架**：React Native with Expo
+- **路由**：Expo Router
+- **圖片處理**：expo-image-picker
+- **圖標**：@expo/vector-icons (Ionicons)
+- **語言**：TypeScript
+
+## 快速開始
+
+### 安裝依賴
+\`\`\`bash
+npm install
+\`\`\`
+
+### 啟動開發伺服器
+\`\`\`bash
+npx expo start
+\`\`\`
+
+### 在不同平台上運行
+- **iOS 模擬器**：按 `i`
+- **Android 模擬器**：按 `a`
+- **Web 瀏覽器**：按 `w`
+- **實體裝置**：使用 Expo Go 掃描 QR 碼
+
+## 專案結構
+
+\`\`\`
+app/
+├── _layout.tsx          # 應用程式佈局
+└── index.tsx           # 主頁面（髮型選擇界面）
+
+assets/                  # 靜態資源
+__tests__/              # 測試文件
+\`\`\`
+
+## 開發規劃
+
+### 已完成 ✅
+- [x] 基礎專案結構設置
+- [x] 照片選擇功能（相機 + 相冊）
+- [x] 髮型選擇列表
+- [x] 現代髮廊風格 UI 設計
+- [x] 響應式布局
+
+### 後續開發計劃 🚧
+- [ ] AI 髮型變換核心功能
+- [ ] 更多髮型樣式選項
+- [ ] 髮型預覽效果
+- [ ] 儲存和分享功能
+- [ ] 髮型歷史記錄
+- [ ] 用戶偏好設置
+
+## 設計理念
+
+這個應用程式的設計靈感來自現代髮廊，採用：
+- **極簡主義**：乾淨簡潔的界面
+- **溫馨友好**：讓用戶感到舒適的配色
+- **專業感**：體現髮型設計的專業性
+- **易用性**：直觀的操作流程
+
+## 貢獻
+
+歡迎提交 Issues 和 Pull Requests 來改善這個應用程式！
 
 # Getting Started
 

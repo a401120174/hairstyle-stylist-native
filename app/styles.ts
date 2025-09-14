@@ -11,7 +11,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 32,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    width: '100%',
   },
   title: {
     fontSize: 32,
@@ -146,5 +151,24 @@ export const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     letterSpacing: 0.5,
+  },
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+  },
+  defaultProfileImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

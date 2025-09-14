@@ -5,13 +5,17 @@ import {
   TouchableOpacity, 
   Image, 
   ScrollView, 
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from './styles';
+import { useAuth } from '../contexts/AuthContext';
+import LoginScreen from '../components/LoginScreen';
 
 // 模擬髮型數據
 const hairstyles = [
@@ -24,8 +28,24 @@ const hairstyles = [
 ];
 
 export default function HomeScreen() {
+  const { user, loading } = useAuth();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedHairstyle, setSelectedHairstyle] = useState<number | null>(null);
+
+  // 如果正在加載認證狀態，顯示載入畫面
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#8B5CF6" />
+        <Text style={{ marginTop: 16, color: '#6B7280' }}>載入中...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // 如果用戶未登入，顯示登入畫面
+  if (!user) {
+    return <LoginScreen />;
+  }
 
   const pickImageFromLibrary = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -84,8 +104,24 @@ export default function HomeScreen() {
       
       {/* 標題區域 */}
       <View style={styles.header}>
-        <Text style={styles.title}>AI 髮型設計師</Text>
-        <Text style={styles.subtitle}>選擇照片，發現完美髮型</Text>
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.title}>AI 髮型設計師</Text>
+            <Text style={styles.subtitle}>選擇照片，發現完美髮型</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => router.push('/profile' as any)}
+          >
+            {user.photoURL ? (
+              <Image source={{ uri: user.photoURL }} style={styles.profileImage} />
+            ) : (
+              <View style={styles.defaultProfileImage}>
+                <Ionicons name="person" size={20} color="#8B5CF6" />
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* 主體照片選擇區域 */}

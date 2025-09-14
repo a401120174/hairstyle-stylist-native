@@ -171,4 +171,66 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // 新增點數相關樣式
+  headerRightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  creditsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  creditsText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#8B5CF6',
+  },
+  // 結果顯示樣式
+  resultSection: {
+    marginHorizontal: 24,
+    marginBottom: 32,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  resultImage: {
+    width: '100%',
+    height: width * 0.6,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  clearResultButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    alignSelf: 'center',
+  },
+  clearResultText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
 });

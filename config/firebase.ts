@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, initializeAuth, Auth } from 'firebase/auth';
+import { getAuth, initializeAuth, Auth, connectAuthEmulator } from 'firebase/auth';
+import { getFunctions, Functions, connectFunctionsEmulator } from 'firebase/functions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
@@ -12,6 +13,9 @@ const firebaseConfig = {
   messagingSenderId: "123456789",
   appId: "1:123456789:web:abcdefghijklmnop"
 };
+
+// 檢查是否為開發環境
+const isDev = __DEV__;
 
 // 初始化Firebase App
 let app: FirebaseApp;
@@ -30,5 +34,25 @@ try {
   auth = initializeAuth(app);
 }
 
-export { auth };
+// 初始化Functions
+const functions: Functions = getFunctions(app);
+
+// 開發環境連接到Emulator
+if (isDev) {
+  // 連接Auth Emulator
+  try {
+    connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  } catch (error) {
+    console.log('Auth emulator already connected or not available');
+  }
+  
+  // 連接Functions Emulator
+  try {
+    connectFunctionsEmulator(functions, '127.0.0.1', 5001);
+  } catch (error) {
+    console.log('Functions emulator already connected or not available');
+  }
+}
+
+export { auth, functions };
 export default app;

@@ -13,9 +13,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './styles';
-import { useAuth } from '../contexts/AuthContext';
-import LoginScreen from '../components/LoginScreen';
+import { styles } from '../styles';
+import { useAuth } from '../contexts/AuthContextAnonymous';
+import { useHairstyleGenerator } from '../hooks/useApiService';
 
 // 模擬髮型數據
 const hairstyles = [
@@ -28,9 +28,56 @@ const hairstyles = [
 ];
 
 export default function HomeScreen() {
-  const { user, loading } = useAuth();
+  const { user, credits, loading } = useAuth();
+  const { 
+    generate, 
+    loading: generatingHairstyle, 
+    generatedImage, 
+    clearGeneratedImage,
+    canGenerate,
+    creditsNeeded,
+    currentCredits 
+  } = useHairstyleGenerator();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedHairstyle, setSelectedHairstyle] = useState<number | null>(null);
+
+  // 應用髮型函數 - 使用新的 API
+  const applyHairstyle = async () => {
+    if (!selectedImage || selectedHairstyle === null) {
+      Alert.alert('提示', '請先選擇照片和髮型風格');
+      return;
+    }
+    
+    // 檢查是否可以生成
+    if (!canGenerate) {
+      Alert.alert(
+        '點數不足',
+        `此功能需要 ${creditsNeeded} 點數，您目前有 ${currentCredits} 點數。\n\n是否前往購買點數？`,
+        [
+          { text: '取消', style: 'cancel' },
+          { 
+            text: '購買點數', 
+            onPress: () => router.push('/credits-store' as any) 
+          }
+        ]
+      );
+      return;
+    }
+    
+    try {
+      const imageUrl = await generate();
+      
+      if (imageUrl) {
+        // 清除之前的生成圖片
+        clearGeneratedImage();
+        // 這裡可以顯示生成的髮型圖片或導航到結果頁面
+        console.log('Generated hairstyle image:', imageUrl);
+      }
+    } catch (error) {
+      console.error('Hairstyle generation failed:', error);
+      // 錯誤已經在 useHairstyleGenerator 中處理了
+    }
+  };
 
   // 如果正在加載認證狀態，顯示載入畫面
   if (loading) {
@@ -40,11 +87,6 @@ export default function HomeScreen() {
         <Text style={{ marginTop: 16, color: '#6B7280' }}>載入中...</Text>
       </SafeAreaView>
     );
-  }
-
-  // 如果用戶未登入，顯示登入畫面
-  if (!user) {
-    return <LoginScreen />;
   }
 
   const pickImageFromLibrary = async () => {
@@ -109,18 +151,16 @@ export default function HomeScreen() {
             <Text style={styles.title}>AI 髮型設計師</Text>
             <Text style={styles.subtitle}>選擇照片，發現完美髮型</Text>
           </View>
-          <TouchableOpacity 
-            style={styles.profileButton}
-            onPress={() => router.push('/profile' as any)}
-          >
-            {user.photoURL ? (
-              <Image source={{ uri: user.photoURL }} style={styles.profileImage} />
-            ) : (
-              <View style={styles.defaultProfileImage}>
-                <Ionicons name="person" size={20} color="#8B5CF6" />
-              </View>
-            )}
-          </TouchableOpacity>
+          <View style={styles.headerRightSection}>
+            {/* 點數顯示 */}
+            <TouchableOpacity 
+              style={styles.creditsButton}
+              onPress={() => router.push('/credits-store' as any)}
+            >
+              <Ionicons name="diamond-outline" size={16} color="#8B5CF6" />
+              <Text style={styles.creditsText}>{credits?.balance || 0}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -170,9 +210,33 @@ export default function HomeScreen() {
 
       {/* 應用按鈕 */}
       {selectedImage && selectedHairstyle && (
-        <TouchableOpacity style={styles.applyButton}>
-          <Text style={styles.applyButtonText}>應用髮型</Text>
+        <TouchableOpacity 
+          style={[styles.applyButton, generatingHairstyle && { opacity: 0.7 }]}
+          onPress={applyHairstyle}
+          disabled={generatingHairstyle}
+        >
+          {generatingHairstyle ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text style={styles.applyButtonText}>
+              生成髮型 ({creditsNeeded} 點數)
+            </Text>
+          )}
         </TouchableOpacity>
+      )}
+
+      {/* 顯示生成的髮型圖片 */}
+      {generatedImage && (
+        <View style={styles.resultSection}>
+          <Text style={styles.sectionTitle}>生成結果</Text>
+          <Image source={{ uri: generatedImage }} style={styles.resultImage} />
+          <TouchableOpacity 
+            style={styles.clearResultButton}
+            onPress={clearGeneratedImage}
+          >
+            <Text style={styles.clearResultText}>清除結果</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </SafeAreaView>
   );

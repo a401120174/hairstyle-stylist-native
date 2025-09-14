@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   Text, 
   View, 
@@ -14,8 +14,8 @@ import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../styles';
-import { useAuth } from '../contexts/AuthContextAnonymous';
-import { useHairstyleGenerator } from '../hooks/useApiService';
+import { useHairstyleGenerator } from '../hooks/useHairstyleGenerator';
+import { useCredits } from '../hooks/useCredits';
 
 // 模擬髮型數據
 const hairstyles = [
@@ -28,7 +28,7 @@ const hairstyles = [
 ];
 
 export default function HomeScreen() {
-  const { credits, loading } = useAuth();
+  const { credits, loading } = useCredits();
   const { 
     generate, 
     loading: generatingHairstyle, 

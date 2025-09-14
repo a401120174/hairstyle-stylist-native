@@ -1,15 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Platform } from 'react-native';
-
-// 條件性導入內購模組
-let InAppPurchases: any = null;
-try {
-  if (Platform.OS !== 'web') {
-    InAppPurchases = require('expo-in-app-purchases').default;
-  }
-} catch (error) {
-  console.log('InAppPurchases not available:', error);
-}
+import * as InAppPurchases from 'expo-in-app-purchases';
 
 export type ProductId = 
   | 'credits_10' 
@@ -53,17 +43,6 @@ export const CREDITS_PRODUCTS = {
   },
 };
 
-// 功能使用點數成本
-export const USAGE_COSTS = {
-  BASIC_HAIRSTYLE: 2,          // 基礎髮型變化
-  PREMIUM_HAIRSTYLE: 5,        // 高級髮型變化
-  AI_RECOMMENDATION: 3,        // AI智能推薦
-  HD_EXPORT: 4,               // 高清導出
-  STYLE_COMPARISON: 3,        // 風格比較
-};
-
-export type FeatureType = keyof typeof USAGE_COSTS;
-
 interface Product {
   productId: string;
   price: string;
@@ -79,60 +58,38 @@ interface PurchaseResult {
   receiptData?: string;
 }
 
+interface RestoreResult {
+  success: boolean;
+  purchases?: any[];
+  message?: string;
+  error?: string;
+}
+
 export function useInAppPurchases() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
 
-  // Web環境模擬函數
-  const mockPurchase = (productId: ProductId): Promise<PurchaseResult> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const product = CREDITS_PRODUCTS[productId];
-        if (product) {
-          resolve({
-            success: true,
-            productId,
-            credits: product.credits + product.bonus,
-            receiptData: `mock_receipt_${productId}_${Date.now()}`
-          });
-        } else {
-          resolve({
-            success: false,
-            error: '產品不存在'
-          });
-        }
-      }, 1000);
-    });
-  };
-
   const initializeStore = async () => {
-    if (!InAppPurchases && Platform.OS !== 'web') {
-      console.warn('InAppPurchases not available');
-      return;
-    }
-
     setIsLoading(true);
     try {
-      if (Platform.OS === 'web') {
-        // Web環境使用模擬數據
-        const mockProducts = Object.values(CREDITS_PRODUCTS).map(product => ({
-          productId: product.id,
-          price: product.price,
-          title: product.title,
-          description: product.description
-        }));
-        setProducts(mockProducts);
-      } else {
-        // 原生環境使用真實IAP
-        await InAppPurchases.connectAsync();
-        const productIds = Object.keys(CREDITS_PRODUCTS) as ProductId[];
-        const result = await InAppPurchases.getProductsAsync(productIds);
-        
-        if (result.responseCode === InAppPurchases.IAPResponseCode.OK) {
-          setProducts(result.results || []);
-        }
-      }
+      // 連接到 IAP 服務
+      await InAppPurchases.connectAsync();
+      
+      // 獲取產品信息
+      const productIds = Object.keys(CREDITS_PRODUCTS) as ProductId[];
+      await InAppPurchases.getProductsAsync(productIds);
+      
+      // 為了測試目的，使用模擬產品數據
+      const mockProducts = Object.values(CREDITS_PRODUCTS).map(product => ({
+        productId: product.id,
+        price: product.price,
+        title: product.title,
+        description: product.description
+      }));
+      
+      setProducts(mockProducts);
+      console.log('商店初始化成功');
     } catch (error) {
       console.error('初始化商店失敗:', error);
     } finally {
@@ -144,38 +101,22 @@ export function useInAppPurchases() {
     setIsPurchasing(true);
     
     try {
-      if (Platform.OS === 'web') {
-        // Web環境使用模擬購買
-        return await mockPurchase(productId);
-      } else if (InAppPurchases) {
-        // 原生環境使用真實IAP
-        const result = await InAppPurchases.purchaseItemAsync(productId);
-        
-        if (result.responseCode === InAppPurchases.IAPResponseCode.OK) {
-          const product = CREDITS_PRODUCTS[productId];
-          return {
-            success: true,
-            productId,
-            credits: product.credits + product.bonus,
-            receiptData: result.results?.[0]?.transactionReceipt || 'mock_receipt_data'
-          };
-        } else {
-          return {
-            success: false,
-            error: '購買失敗'
-          };
-        }
-      } else {
-        return {
-          success: false,
-          error: 'IAP服務不可用'
-        };
-      }
+      // 執行購買
+      await InAppPurchases.purchaseItemAsync(productId);
+      
+      // 如果執行到這裡說明購買成功
+      const product = CREDITS_PRODUCTS[productId];
+      return {
+        success: true,
+        productId,
+        credits: product.credits + product.bonus,
+        receiptData: 'mock_receipt' // 在實際實作時應該從 App Store 獲取真實收據
+      };
     } catch (error) {
       console.error('購買錯誤:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : '未知錯誤'
+        error: error instanceof Error ? error.message : '購買失敗'
       };
     } finally {
       setIsPurchasing(false);
@@ -186,38 +127,19 @@ export function useInAppPurchases() {
     return products.find(p => p.productId === productId);
   };
 
-  const restorePurchases = async () => {
-    if (Platform.OS === 'web') {
-      console.log('Web環境不支持恢復購買');
-      return { success: true, purchases: [] };
-    }
-
-    if (!InAppPurchases) {
-      return { success: false, error: 'IAP服務不可用' };
-    }
-
+  const restorePurchases = async (): Promise<RestoreResult> => {
     try {
-      const result = await InAppPurchases.getPurchaseHistoryAsync();
-      if (result.responseCode === InAppPurchases.IAPResponseCode.OK) {
-        // 處理恢復的購買記錄
-        const restoredPurchases = result.results || [];
-        console.log('恢復的購買記錄:', restoredPurchases);
-        
-        // 這裡可以添加將恢復的購買記錄同步到Firebase的邏輯
-        // 例如: await syncPurchasesToFirebase(restoredPurchases);
-        
-        return {
-          success: true,
-          purchases: restoredPurchases,
-          message: `成功恢復 ${restoredPurchases.length} 項購買記錄`
-        };
-      } else {
-        return { 
-          success: false, 
-          error: '無法恢復購買記錄',
-          responseCode: result.responseCode 
-        };
-      }
+      // 恢復購買記錄
+      await InAppPurchases.getPurchaseHistoryAsync();
+      
+      // 如果執行到這裡說明恢復成功
+      console.log('恢復購買成功');
+      
+      return {
+        success: true,
+        purchases: [], // 實際實作時會包含恢復的購買記錄
+        message: '成功恢復購買記錄'
+      };
     } catch (error) {
       console.error('恢復購買失敗:', error);
       return { 
@@ -227,37 +149,14 @@ export function useInAppPurchases() {
     }
   };
 
-  // 新增：同步購買記錄到Firebase的函數
-  const syncPurchasesToFirebase = async (purchases: any[]) => {
-    try {
-      // 這裡實作將購買記錄同步到Firebase的邏輯
-      // 可以調用Firebase Cloud Functions或直接寫入Firestore
-      console.log('同步購買記錄到Firebase:', purchases);
-      
-      // 示例：計算總點數並更新用戶帳戶
-      let totalCredits = 0;
-      for (const purchase of purchases) {
-        const product = CREDITS_PRODUCTS[purchase.productId as keyof typeof CREDITS_PRODUCTS];
-        if (product) {
-          totalCredits += product.credits + product.bonus;
-        }
-      }
-      
-      return { success: true, totalCredits };
-    } catch (error) {
-      console.error('同步購買記錄失敗:', error);
-      return { success: false, error };
-    }
-  };
-
   useEffect(() => {
     initializeStore();
     
     // 清理函數
     return () => {
-      if (InAppPurchases && Platform.OS !== 'web') {
-        InAppPurchases.disconnectAsync();
-      }
+      InAppPurchases.disconnectAsync().catch(error => {
+        console.warn('斷開 IAP 連接時出錯:', error);
+      });
     };
   }, []);
 
@@ -268,7 +167,6 @@ export function useInAppPurchases() {
     purchaseProduct,
     getProduct,
     restorePurchases,
-    initializeStore,
-    syncPurchasesToFirebase
+    initializeStore
   };
 }

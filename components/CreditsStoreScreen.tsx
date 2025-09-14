@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,21 +12,53 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContextAnonymous';
-import { useInAppPurchases, CREDITS_PRODUCTS } from '../hooks/useInAppPurchases';
-import { useDailyCredits, useRewardCredits } from '../hooks/useCreditsManager';
+import { useInAppPurchases } from '../hooks';
+import { useCredits } from '../hooks/useCredits';
+import { useIAPManager } from '../hooks/useIAPManager';
+
+// 從原文件直接導入產品常量
+const CREDITS_PRODUCTS = {
+  credits_10: {
+    id: 'credits_10',
+    credits: 10,
+    price: '$0.99',
+    bonus: 0,
+    title: '基礎點數包',
+    description: '10 點數'
+  },
+  credits_50: {
+    id: 'credits_50',
+    credits: 50,
+    price: '$4.99',
+    bonus: 10,
+    title: '熱門點數包',
+    description: '50 點數 + 10 點數'
+  },
+  credits_100: {
+    id: 'credits_100',
+    credits: 100,
+    price: '$9.99',
+    bonus: 25,
+    title: '超值點數包',
+    description: '100 點數 + 25 點數'
+  },
+  credits_250: {
+    id: 'credits_250',
+    credits: 250,
+    price: '$19.99',
+    bonus: 75,
+    title: '豪華點數包',
+    description: '250 點數 + 75 點數'
+  },
+};
 
 export default function CreditsStoreScreen() {
-  const { user, credits, refreshCredits, isAnonymous, handleIAPPurchase, restoreIAPPurchases } = useAuth();
+  const { user, isAnonymous } = useAuth();
+  const { credits, refreshCredits } = useCredits();
+  const { handleIAPPurchase, restoreIAPPurchases } = useIAPManager();
   const iap = useInAppPurchases();
-  const { canClaimDaily, claimDailyCredits, claiming } = useDailyCredits();
-  const rewardActions = useRewardCredits();
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [pulseAnim] = useState(new Animated.Value(1));
-  const [dailyClaimable, setDailyClaimable] = useState(false);
-
-  useEffect(() => {
-    checkDailyClaimable();
-  }, []);
 
   useEffect(() => {
     // 點數餘額動畫
@@ -44,11 +76,6 @@ export default function CreditsStoreScreen() {
     ]).start();
   }, [credits.balance]);
 
-  const checkDailyClaimable = async () => {
-    const claimable = await canClaimDaily();
-    setDailyClaimable(claimable);
-  };
-
   const handlePurchase = async (productId: string) => {
     try {
       setPurchasing(productId);
@@ -61,30 +88,11 @@ export default function CreditsStoreScreen() {
         const processed = await handleIAPPurchase(productId, result.receiptData);
         
         if (processed) {
-          if (isAnonymous) {
-            // 匿名用戶購買
-            Alert.alert(
-              '購買成功！',
-              `已獲得 ${result.credits} 點數！\n\n您目前使用匿名帳戶，建議註冊正式帳戶以保護您的購買記錄。`,
-              [
-                { text: '稍後', style: 'cancel' },
-                { 
-                  text: '了解更多', 
-                  onPress: () => {
-                    // 這裡可以導航到帳戶升級說明頁面
-                    console.log('導航到帳戶升級頁面');
-                  }
-                }
-              ]
-            );
-          } else {
-            // 正式用戶購買
-            Alert.alert(
-              '購買成功',
-              '點數已添加到您的帳戶！',
-              [{ text: '確定' }]
-            );
-          }
+          Alert.alert(
+            '購買成功',
+            '點數已添加到您的帳戶！',
+            [{ text: '確定' }]
+          )
           await refreshCredits();
         } else {
           throw new Error('購買驗證失敗');
@@ -142,14 +150,6 @@ export default function CreditsStoreScreen() {
         '恢復購買記錄時發生錯誤',
         [{ text: '確定' }]
       );
-    }
-  };
-
-  const handleDailyClaim = async () => {
-    const success = await claimDailyCredits();
-    if (success) {
-      setDailyClaimable(false);
-      await refreshCredits();
     }
   };
 
@@ -256,29 +256,6 @@ export default function CreditsStoreScreen() {
           </Animated.View>
         </View>
 
-        {/* 每日免費點數 */}
-        {credits.features.dailyFreeCredits && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>每日免費</Text>
-            <TouchableOpacity
-              style={[styles.dailyRewardCard, !dailyClaimable && styles.dailyRewardCardDisabled]}
-              onPress={handleDailyClaim}
-              disabled={!dailyClaimable || claiming}
-            >
-              <View style={styles.dailyRewardIcon}>
-                <Ionicons name="gift" size={32} color={dailyClaimable ? "#10B981" : "#9CA3AF"} />
-              </View>
-              <View style={styles.dailyRewardInfo}>
-                <Text style={styles.dailyRewardTitle}>
-                  {dailyClaimable ? "領取每日免費點數" : "今日已領取"}
-                </Text>
-                <Text style={styles.dailyRewardSubtitle}>每天免費獲得 3 點數</Text>
-              </View>
-              {claiming && <ActivityIndicator color="#10B981" />}
-            </TouchableOpacity>
-          </View>
-        )}
-
         {/* 購買點數包 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>購買點數</Text>
@@ -288,32 +265,6 @@ export default function CreditsStoreScreen() {
             {renderCreditsPackage('credits_100', true)}
             {renderCreditsPackage('credits_250')}
           </View>
-        </View>
-
-        {/* 免費獲得點數 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>免費獲得</Text>
-          {renderRewardAction(
-            "分享應用",
-            "分享給朋友獲得獎勵",
-            2,
-            rewardActions.shareApp,
-            "share-outline"
-          )}
-          {renderRewardAction(
-            "評分應用",
-            "在App Store給我們評分",
-            5,
-            rewardActions.rateApp,
-            "star-outline"
-          )}
-          {renderRewardAction(
-            "完善資料",
-            "完成個人資料設定",
-            3,
-            rewardActions.completeProfile,
-            "person-outline"
-          )}
         </View>
 
         {/* 恢復購買 */}
@@ -393,35 +344,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1F2937',
     marginBottom: 16,
-  },
-  dailyRewardCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#F0FDF4',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#10B981',
-  },
-  dailyRewardCardDisabled: {
-    backgroundColor: '#F3F4F6',
-    borderColor: '#E5E7EB',
-  },
-  dailyRewardIcon: {
-    marginRight: 16,
-  },
-  dailyRewardInfo: {
-    flex: 1,
-  },
-  dailyRewardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  dailyRewardSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
   },
   packagesContainer: {
     gap: 16,

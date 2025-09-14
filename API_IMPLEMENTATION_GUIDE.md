@@ -25,11 +25,10 @@
   - 伺服器端點數同步
 
 ### ✅ 4. API Hook
-- **文件**: `hooks/useApiService.ts`
+- **文件**: `hooks/useHairstyleGenerator.ts`, `hooks/useCredits.ts`
 - **提供的 Hook**:
-  - `useApiService()` - 通用 API 服務
   - `useHairstyleGenerator()` - 髮型生成專用
-  - `useCreditsAPI()` - 點數管理
+  - `useCredits()` - 點數管理
 
 ### ✅ 5. 更新的主界面
 - **文件**: `app/index.tsx`
@@ -66,7 +65,7 @@ try {
 ### 使用 Hook
 
 ```typescript
-import { useHairstyleGenerator } from '../hooks/useApiService';
+import { useHairstyleGenerator } from '../hooks/useHairstyleGenerator';
 
 function HairstyleComponent() {
   const { 
@@ -193,13 +192,13 @@ useEffect(() => {
 
 ### 2. 點數同步測試
 ```typescript
-import { useCreditsAPI } from '../hooks/useApiService';
+import { useCredits } from '../hooks/useCredits';
 
 function TestCredits() {
-  const { refresh, loading } = useCreditsAPI();
+  const { refreshCredits, loading } = useCredits();
   
   return (
-    <TouchableOpacity onPress={refresh} disabled={loading}>
+    <TouchableOpacity onPress={refreshCredits} disabled={loading}>
       <Text>刷新點數</Text>
     </TouchableOpacity>
   );

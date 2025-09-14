@@ -1,0 +1,150 @@
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FAFAFA',
+  },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 32,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#2C2C2C',
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#8E8E93',
+    textAlign: 'center',
+    fontWeight: '400',
+  },
+  photoSection: {
+    flex: 1,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: height * 0.4,
+  },
+  photoContainer: {
+    width: width * 0.7,
+    height: width * 0.7,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  selectedPhoto: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+  },
+  placeholderPhoto: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8F9FA',
+  },
+  placeholderText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#A1A1AA',
+    fontWeight: '500',
+  },
+  changePhotoButton: {
+    marginTop: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  changePhotoText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '600',
+  },
+  hairstyleSection: {
+    paddingBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#2C2C2C',
+    marginLeft: 24,
+    marginBottom: 20,
+  },
+  hairstyleScrollContainer: {
+    paddingHorizontal: 16,
+  },
+  hairstyleCard: {
+    marginHorizontal: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  selectedHairstyleCard: {
+    borderColor: '#007AFF',
+    backgroundColor: '#F0F8FF',
+  },
+  hairstyleImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  hairstyleName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2C2C2C',
+    textAlign: 'center',
+    width: 80,
+  },
+  applyButton: {
+    marginHorizontal: 24,
+    marginBottom: 32,
+    paddingVertical: 16,
+    backgroundColor: '#007AFF',
+    borderRadius: 16,
+    shadowColor: '#007AFF',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  applyButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+});

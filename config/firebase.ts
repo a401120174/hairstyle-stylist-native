@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, initializeAuth, Auth, connectAuthEmulator } from 'firebase/auth';
 import { getFunctions, Functions, connectFunctionsEmulator } from 'firebase/functions';
+import { getFirestore, Firestore, connectFirestoreEmulator } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
@@ -37,6 +38,9 @@ try {
 // 初始化Functions
 const functions: Functions = getFunctions(app);
 
+// 初始化Firestore
+const firestore: Firestore = getFirestore(app);
+
 // 開發環境連接到Emulator
 if (isDev) {
   // 連接Auth Emulator
@@ -52,7 +56,14 @@ if (isDev) {
   } catch (error) {
     console.log('Functions emulator already connected or not available');
   }
+
+  // 連接Firestore Emulator
+  try {
+    connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
+  } catch (error) {
+    console.log('Firestore emulator already connected or not available');
+  }
 }
 
-export { auth, functions };
+export { auth, functions, firestore };
 export default app;

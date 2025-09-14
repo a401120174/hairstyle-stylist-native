@@ -28,7 +28,7 @@ const hairstyles = [
 ];
 
 export default function HomeScreen() {
-  const { user, credits, loading } = useAuth();
+  const { credits, loading } = useAuth();
   const { 
     generate, 
     loading: generatingHairstyle, 
@@ -43,11 +43,6 @@ export default function HomeScreen() {
 
   // 應用髮型函數 - 使用新的 API
   const applyHairstyle = async () => {
-    if (!selectedImage || selectedHairstyle === null) {
-      Alert.alert('提示', '請先選擇照片和髮型風格');
-      return;
-    }
-    
     // 檢查是否可以生成
     if (!canGenerate) {
       Alert.alert(

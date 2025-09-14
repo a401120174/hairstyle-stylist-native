@@ -76,6 +76,7 @@ interface PurchaseResult {
   productId?: string;
   credits?: number;
   error?: string;
+  receiptData?: string;
 }
 
 export function useInAppPurchases() {
@@ -92,7 +93,8 @@ export function useInAppPurchases() {
           resolve({
             success: true,
             productId,
-            credits: product.credits + product.bonus
+            credits: product.credits + product.bonus,
+            receiptData: `mock_receipt_${productId}_${Date.now()}`
           });
         } else {
           resolve({
@@ -154,7 +156,8 @@ export function useInAppPurchases() {
           return {
             success: true,
             productId,
-            credits: product.credits + product.bonus
+            credits: product.credits + product.bonus,
+            receiptData: result.results?.[0]?.transactionReceipt || 'mock_receipt_data'
           };
         } else {
           return {

@@ -36,7 +36,7 @@
 |---------|------|------|----------|
 | `getUserCredits` | 獲取用戶點數和基本信息 | ✅ 可用 | 是 |
 | `tryHairstyle` | 嘗試 AI 換髮型功能 | ✅ 可用 | 是 |
-| `verifyIosPurchase` | iOS 內購驗證 | 🚧 開發中 | 是 |
+| `verifyIosPurchase` | iOS 內購驗證 | ✅ 可用 | 是 |
 | `verifyAndroidPurchase` | Android 內購驗證 | 🚧 開發中 | 是 |
 | `addCreditsToUser` | 管理員手動加點 | 🚧 開發中 | 是 |
 
@@ -246,7 +246,7 @@ const HairstyleGenerator = () => {
 
 ### `verifyIosPurchase` - iOS 內購驗證
 
-**狀態**: 🚧 開發中
+**狀態**: ✅ 可用
 
 驗證 iOS App Store 內購收據並為用戶帳戶添加點數。
 

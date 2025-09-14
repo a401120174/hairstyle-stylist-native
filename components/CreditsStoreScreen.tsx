@@ -16,7 +16,7 @@ import { useInAppPurchases, CREDITS_PRODUCTS } from '../hooks/useInAppPurchases'
 import { useDailyCredits, useRewardCredits } from '../hooks/useCreditsManager';
 
 export default function CreditsStoreScreen() {
-  const { user, credits, refreshCredits, isAnonymous } = useAuth();
+  const { user, credits, refreshCredits, isAnonymous, handleIAPPurchase, restoreIAPPurchases } = useAuth();
   const iap = useInAppPurchases();
   const { canClaimDaily, claimDailyCredits, claiming } = useDailyCredits();
   const rewardActions = useRewardCredits();
@@ -52,34 +52,43 @@ export default function CreditsStoreScreen() {
   const handlePurchase = async (productId: string) => {
     try {
       setPurchasing(productId);
+      
+      // 使用 IAP hook 進行購買
       const result = await iap.purchaseProduct(productId as any);
       
-      if (result.success) {
-        if (isAnonymous) {
-          // 匿名用戶購買
-          Alert.alert(
-            '購買成功！',
-            `已獲得 ${result.credits} 點數！\n\n您目前使用匿名帳戶，建議註冊正式帳戶以保護您的購買記錄。`,
-            [
-              { text: '稍後', style: 'cancel' },
-              { 
-                text: '了解更多', 
-                onPress: () => {
-                  // 這裡可以導航到帳戶升級說明頁面
-                  console.log('導航到帳戶升級頁面');
+      if (result.success && result.receiptData) {
+        // 使用 AuthContext 的 IAP 處理方法
+        const processed = await handleIAPPurchase(productId, result.receiptData);
+        
+        if (processed) {
+          if (isAnonymous) {
+            // 匿名用戶購買
+            Alert.alert(
+              '購買成功！',
+              `已獲得 ${result.credits} 點數！\n\n您目前使用匿名帳戶，建議註冊正式帳戶以保護您的購買記錄。`,
+              [
+                { text: '稍後', style: 'cancel' },
+                { 
+                  text: '了解更多', 
+                  onPress: () => {
+                    // 這裡可以導航到帳戶升級說明頁面
+                    console.log('導航到帳戶升級頁面');
+                  }
                 }
-              }
-            ]
-          );
+              ]
+            );
+          } else {
+            // 正式用戶購買
+            Alert.alert(
+              '購買成功',
+              '點數已添加到您的帳戶！',
+              [{ text: '確定' }]
+            );
+          }
+          await refreshCredits();
         } else {
-          // 正式用戶購買
-          Alert.alert(
-            '購買成功',
-            '點數已添加到您的帳戶！',
-            [{ text: '確定' }]
-          );
+          throw new Error('購買驗證失敗');
         }
-        await refreshCredits();
       } else {
         Alert.alert(
           '購買失敗',
@@ -101,20 +110,28 @@ export default function CreditsStoreScreen() {
 
   const handleRestorePurchases = async () => {
     try {
-      const result = await iap.restorePurchases();
+      // 使用 IAP hook 恢復購買
+      const iapResult = await iap.restorePurchases();
       
-      if (result.success) {
-        const message = result.message || '已恢復您之前的購買記錄';
-        Alert.alert(
-          '恢復成功',
-          message,
-          [{ text: '確定' }]
-        );
-        await refreshCredits();
+      if (iapResult.success) {
+        // 使用 AuthContext 的恢復購買方法
+        const processed = await restoreIAPPurchases();
+        
+        if (processed) {
+          const message = iapResult.message || '已恢復您之前的購買記錄';
+          Alert.alert(
+            '恢復成功',
+            message,
+            [{ text: '確定' }]
+          );
+          await refreshCredits();
+        } else {
+          throw new Error('恢復購買驗證失敗');
+        }
       } else {
         Alert.alert(
           '恢復失敗',
-          result.error || '無法恢復購買記錄，請稍後再試',
+          iapResult.error || '無法恢復購買記錄，請稍後再試',
           [{ text: '確定' }]
         );
       }

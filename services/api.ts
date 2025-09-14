@@ -19,6 +19,13 @@ export interface TryHairstyleResponse {
   creditsLeft: number;
 }
 
+export interface VerifyIosPurchaseResponse {
+  success: boolean;
+  creditsAdded?: number;
+  totalCredits?: number;
+  error?: string;
+}
+
 // API 錯誤類型
 export class ApiError extends Error {
   constructor(
@@ -61,8 +68,10 @@ const handleApiError = (error: any): ApiError => {
 };
 
 // API 函數實例
-const getUserCreditsFunction = httpsCallable<void, GetUserCreditsResponse>(functions, 'getUserCredits');
-const tryHairstyleFunction = httpsCallable<void, TryHairstyleResponse>(functions, 'tryHairstyle');
+// Firebase Functions 調用
+const getUserCreditsFunction = httpsCallable(functions, 'getUserCredits');
+const tryHairstyleFunction = httpsCallable(functions, 'tryHairstyle');
+const verifyIosPurchaseFunction = httpsCallable(functions, 'verifyIosPurchase');
 
 // API 服務類
 export class ApiService {
@@ -72,7 +81,7 @@ export class ApiService {
   static async getUserCredits(): Promise<GetUserCreditsResponse> {
     try {
       const result = await getUserCreditsFunction();
-      return result.data;
+      return result.data as GetUserCreditsResponse;
     } catch (error) {
       throw handleApiError(error);
     }
@@ -84,7 +93,19 @@ export class ApiService {
   static async tryHairstyle(): Promise<TryHairstyleResponse> {
     try {
       const result = await tryHairstyleFunction();
-      return result.data;
+      return result.data as TryHairstyleResponse;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  }
+
+  /**
+   * 驗證 iOS 內購收據
+   */
+  static async verifyIosPurchase(receiptData: string): Promise<VerifyIosPurchaseResponse> {
+    try {
+      const result = await verifyIosPurchaseFunction({ receiptData });
+      return result.data as VerifyIosPurchaseResponse;
     } catch (error) {
       throw handleApiError(error);
     }
